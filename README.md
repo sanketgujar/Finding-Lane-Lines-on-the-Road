@@ -1,7 +1,5 @@
 # **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
-
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+<img src="final_img/solidWhiteRight.jpg" width="480" alt="Combined Image" />
 
 Overview
 ---
@@ -10,44 +8,24 @@ When we drive, we use our eyes to decide where to go.  The lines on the road tha
 
 In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+### 1. Pipeline:
+The Pipeline consists of  steps:
+1. The images consists of yellow and white lines. To Filtered out the colour I converted RGB to HLS colour space.The lines are more 	recognizable in HLS color space
+2. Converted the HLS color space image to gray scale (single channel) for edge detection.
+3. Before Edge Detection, we need to smoothen the image, to supress the noise. I used Gaussian Blurr with kernel size of 13.
+4. To find out the edges of the lanes, I used Canny Edge Detector which uses the pixel gradient values and filters the image according to the Lower and Higher threshold provided. The pixel below lower threshold are ignored, while pixels above higher threshold are accepted. While pixels lying between lower and higher threhold are accepted if there are in connection with the pixels above the higher threshold.The preffered ratio of threshold are 2:1, 3:1.  The threshold are selected dynamically using the median of the gray scale image. the lower and upper threshold are in the range of (0.66*median , 1.33*median )
+5. I then selected the Region of Interest with a polygon of trapeziodal shape focusing on the lower part where the probability of finding lane is more. The region outside the ROI is excluded by masking 0.
+6. I then used Hough Line Transform to find out the lines in ROI. It returns lines endpoint (x1,y1,x2,y2) detected in the images.
+7. We then need to extrapolate the line as a single lane line. For this I used the weighted average method. First I seperated the right and left lane by using slope ( left lane has positive slope and right lane has negative slope). I then weighted average the slope and the intercept by using lenght of the line. After getting the average slope and intercept of Left and Right lane, we just need to extrapolate the lanes.
+8.  To draw the lanes on the image, I used the weigthed image of line and the original Image as shown in the Output Directory.    	
+![alt text][img]
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+### 2. potential shortcomings
+1.  The ROI needs to be dynamic, as there will be cases when the lanes will not be perfectly fit in the fixed ROI.
+2.  The Canny edge threshold needs to be dynamic to get proper edges even when the light intensity varies.
+3.  The Hough line Tranform Parameters need to dyanmic to get proper number of lines in every conditions.
 
+### 3. Suggest possible improvements to your pipeline
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
----
-
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
-
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
-
-**Step 2:** Open the code in a Jupyter Notebook
-
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out <A HREF="https://www.packtpub.com/books/content/basics-jupyter-notebook-and-python" target="_blank">Cyrille Rossant's Basics of Jupyter Notebook and Python</A> to get started.
-
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
-
-`> jupyter notebook`
-
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
-
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
-
+1.  A possible improvement would be to have dynamic parameters to Canny, Hough functions according to the pixel Intensities. 
+2.  Another potential improvement could be to have a dynamic ROI selector by using CNN.
